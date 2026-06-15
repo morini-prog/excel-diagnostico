@@ -55,8 +55,16 @@ export default function TeacherDashboard() {
   const handleConfirmarBorrado = async (e) => {
     e.preventDefault();
     if (deletePassword === '2228') {
-      await borrarTodosLosResultados();
-      setMostrarBorrarModal(false);
+      try {
+        setDeleteError('');
+        await borrarTodosLosResultados();
+        // Si no hay error, cerramos el modal con éxito
+        setMostrarBorrarModal(false);
+      } catch (err) {
+        console.error('Error al borrar de Firestore:', err);
+        // Informar al usuario que la base de datos remota denegó el borrado (común en reglas seguras de solo lectura/escritura)
+        setDeleteError('Se limpió el almacenamiento local, pero la base de datos de Firebase (Firestore) denegó el permiso de borrado.');
+      }
     } else {
       setDeleteError('Clave incorrecta. No se pueden borrar los registros.');
     }
@@ -131,7 +139,6 @@ export default function TeacherDashboard() {
   }, []);
 
   // 3. Top 5 Leaderboard (Podio Olímpico)
-  // Ordenamos globalmente por porcentaje desc, y por fecha desc (más reciente desempata)
   const topAlumnos = [...resultados]
     .sort((a, b) => {
       if (b.porcentaje !== a.porcentaje) {
@@ -143,7 +150,6 @@ export default function TeacherDashboard() {
     })
     .slice(0, 5);
 
-  // Mapear posiciones para el podio 3D: [Plata (2°), Oro (1°), Bronce (3°)]
   const plata = topAlumnos[1] || null;
   const oro = topAlumnos[0] || null;
   const bronce = topAlumnos[2] || null;
@@ -164,7 +170,7 @@ export default function TeacherDashboard() {
         <div className="flex items-center gap-4">
           <button
             onClick={handleCerrarSesionDocente}
-            className="px-4 py-2 bg-slate-900 border border-slate-850 hover:border-slate-700 text-slate-400 hover:text-white font-bold rounded-xl text-xs transition-all"
+            className="px-4 py-2 bg-slate-900 border border-slate-855 hover:border-slate-700 text-slate-400 hover:text-white font-bold rounded-xl text-xs transition-all"
           >
             Cerrar Sesión Docente
           </button>
@@ -231,9 +237,9 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
-        {/* Buscador de Texto (Solo se muestra en vistas que listan elementos filtrables) */}
+        {/* Buscador de Texto */}
         {vista !== 'podio' && (
-          <div className="flex flex-col sm:flex-row gap-3 bg-slate-900/40 border border-slate-850 rounded-2xl p-4">
+          <div className="flex flex-col sm:flex-row gap-3 bg-slate-900/40 border border-slate-855 rounded-2xl p-4">
             <input
               type="text"
               value={filtroTexto}
@@ -308,7 +314,7 @@ export default function TeacherDashboard() {
             {vista === 'porcentaje' && (
               <div className="space-y-6">
                 {groupedByRank.length === 0 ? (
-                  <div className="bg-slate-905/60 border border-slate-850 rounded-2xl p-8 text-center text-slate-500">
+                  <div className="bg-slate-900/60 border border-slate-850 rounded-2xl p-8 text-center text-slate-500">
                     No hay registros con los filtros indicados.
                   </div>
                 ) : (
@@ -419,7 +425,7 @@ export default function TeacherDashboard() {
                             <span className="text-3xl">🥈</span>
                             <h4 className="text-sm font-bold text-white max-w-[130px] truncate mx-auto">{plata.nombre}</h4>
                             <p className="text-xs text-slate-400 font-bold">{plata.porcentaje}%</p>
-                            <p className="text-[9px] text-slate-500">{getShortDate(plata.fecha)}</p>
+                            <p className="text-[9px] text-slate-550">{getShortDate(plata.fecha)}</p>
                           </div>
                         ) : (
                           <div className="text-center mb-3 text-slate-600 text-xs italic">Vacío</div>
@@ -456,7 +462,7 @@ export default function TeacherDashboard() {
                             <span className="text-3xl">🥉</span>
                             <h4 className="text-sm font-bold text-white max-w-[130px] truncate mx-auto">{bronce.nombre}</h4>
                             <p className="text-xs text-slate-400 font-bold">{bronce.porcentaje}%</p>
-                            <p className="text-[9px] text-slate-500">{getShortDate(bronce.fecha)}</p>
+                            <p className="text-[9px] text-slate-550">{getShortDate(bronce.fecha)}</p>
                           </div>
                         ) : (
                           <div className="text-center mb-3 text-slate-600 text-xs italic">Vacío</div>
@@ -487,7 +493,7 @@ export default function TeacherDashboard() {
                               </span>
                               <div>
                                 <p className="text-sm font-bold text-white">{res.nombre} {res.apellido}</p>
-                                <p className="text-[10px] text-slate-500 mt-0.5">{res.email}</p>
+                                <p className="text-[10px] text-slate-550 mt-0.5">{res.email}</p>
                               </div>
                             </div>
                             <div className="text-right">
@@ -531,7 +537,7 @@ export default function TeacherDashboard() {
               </div>
 
               {deleteError && (
-                <div className="text-rose-500 text-xs font-semibold text-center bg-rose-500/10 border border-rose-500/20 py-2 rounded-xl">
+                <div className="text-rose-500 text-xs font-semibold text-center bg-rose-500/10 border border-rose-500/20 py-2.5 rounded-xl">
                   {deleteError}
                 </div>
               )}

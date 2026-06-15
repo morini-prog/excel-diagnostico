@@ -99,6 +99,8 @@ export async function obtenerTodosLosResultados() {
  * Borra todos los resultados globales de Firestore y de localStore.
  */
 export async function borrarTodosLosResultados() {
+  let firestoreError = null;
+  
   if (hasFirebaseConfig && db) {
     try {
       const q = query(collection(db, COLECCION));
@@ -113,12 +115,18 @@ export async function borrarTodosLosResultados() {
       console.log('[ExcelQuest] Todos los registros de Firestore han sido eliminados.');
     } catch (err) {
       console.warn('[ExcelQuest] Error al intentar borrar registros de Firestore:', err);
+      firestoreError = err;
     }
   }
   
   // Limpiar también la base local
   localStore.borrarTodos();
   window.dispatchEvent(new Event('localstore-update'));
+
+  // Propagar el error de base de datos si ocurrió, para avisar al panel docente
+  if (firestoreError) {
+    throw firestoreError;
+  }
 }
 
 /**
