@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 // Frases motivacionales según el estado
 const FRASES = {
   inicio: [
-    '¡Hola! Soy Excelito, tu compañero de diagnóstico. ¡Mucho éxito! 🚀',
+    '¡Hola! Te acompañaré durante tu diagnóstico. ¡Mucho éxito! 🚀',
     '¡Qué alegría verte! ¿Listo para demostrar tus habilidades en Excel? 📊',
     '¡Hola, jugador! Prepárate para el reto. ¡Vamos a divertirnos! 🎮'
   ],
@@ -39,24 +39,17 @@ export default function Excelito({ estado = 'esperando' }) {
     setFrase(listaFrases[randomIndex]);
   }, [estado]);
 
-  return (
-    <div className="flex items-center gap-6 bg-slate-900/40 border border-slate-800/80 rounded-3xl p-5 shadow-xl backdrop-blur-md transition-all duration-300">
-      {/* Sprite Pixel Art de Excelito (Imagen generada) */}
-      <div className="relative flex-shrink-0 w-24 h-24 flex items-center justify-center animate-bounce duration-1000">
-        <img
-          src="/excelito.png"
-          alt="Excelito"
-          className="w-22 h-22 object-contain filter drop-shadow-[0_0_10px_rgba(16,185,129,0.35)]"
-          style={{ imageRendering: 'pixelated' }}
-        />
-      </div>
+  // Selección de icono de estado
+  const icon = estado === 'correcto' ? '🎉' : estado === 'incorrecto' ? '💡' : '📢';
+  const borderClass = estado === 'correcto' ? 'border-emerald-500/25 bg-emerald-500/5' : estado === 'incorrecto' ? 'border-rose-500/20 bg-rose-500/5' : 'border-slate-800 bg-slate-900/40';
 
-      {/* Globo de diálogo */}
-      <div className="relative flex-1 bg-slate-800 border border-slate-700 rounded-2xl px-4 py-3 shadow-md">
-        {/* Triángulo del globo */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 w-3 h-3 bg-slate-800 border-l border-b border-slate-700 rotate-45" />
-        
-        <p className="text-slate-100 text-sm font-medium leading-relaxed">
+  return (
+    <div className={`border rounded-3xl p-5 shadow-xl backdrop-blur-md transition-all duration-300 flex items-center gap-4 ${borderClass}`}>
+      <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-lg shadow-inner">
+        {icon}
+      </div>
+      <div className="flex-1">
+        <p className="text-slate-250 text-sm font-medium leading-relaxed">
           {frase}
         </p>
       </div>
