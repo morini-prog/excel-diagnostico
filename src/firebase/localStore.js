@@ -43,4 +43,8 @@ export const localStore = {
   obtenerTodos() {
     return getAll();
   },
+
+  borrarTodos() {
+    saveAll([]);
+  }
 };

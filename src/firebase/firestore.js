@@ -6,7 +6,9 @@ import {
   where,
   orderBy,
   serverTimestamp,
-  onSnapshot
+  onSnapshot,
+  writeBatch,
+  doc
 } from 'firebase/firestore';
 import { db, hasFirebaseConfig } from './config';
 import { localStore } from './localStore';
@@ -81,6 +83,32 @@ export async function obtenerTodosLosResultados() {
     }
   }
   return localStore.obtenerTodos();
+}
+
+/**
+ * Borra todos los resultados globales de Firestore y de localStore.
+ */
+export async function borrarTodosLosResultados() {
+  if (hasFirebaseConfig && db) {
+    try {
+      const q = query(collection(db, COLECCION));
+      const snapshot = await getDocs(q);
+      const batch = writeBatch(db);
+      
+      snapshot.docs.forEach((docSnap) => {
+        batch.delete(docSnap.ref);
+      });
+      
+      await batch.commit();
+      console.log('[ExcelQuest] Todos los registros de Firestore han sido eliminados.');
+    } catch (err) {
+      console.warn('[ExcelQuest] Error al intentar borrar registros de Firestore:', err);
+    }
+  }
+  
+  // Limpiar también la base local
+  localStore.borrarTodos();
+  window.dispatchEvent(new Event('localstore-update'));
 }
 
 /**
