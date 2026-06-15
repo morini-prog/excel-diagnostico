@@ -35,6 +35,11 @@ export const localStore = {
     return getAll().filter((item) => item.uid === uid);
   },
 
+  obtenerPorEmail(email) {
+    if (!email) return [];
+    return getAll().filter((item) => item.email?.toLowerCase().trim() === email.toLowerCase().trim());
+  },
+
   obtenerTodos() {
     return getAll();
   },

@@ -32,19 +32,21 @@ export async function guardarResultado(datos) {
 }
 
 /**
- * Recupera todos los resultados de un usuario específico.
+ * Recupera todos los resultados de un usuario específico mediante su email.
  */
-export async function obtenerResultadosPorUsuario(uid) {
+export async function obtenerResultadosPorUsuario(email) {
+  if (!email) return [];
+  
   if (hasFirebaseConfig && db) {
     const q = query(
       collection(db, COLECCION),
-      where('uid', '==', uid),
+      where('email', '==', email.toLowerCase().trim()),
       orderBy('fecha', 'desc')
     );
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   }
-  return localStore.obtenerPorUid(uid);
+  return localStore.obtenerPorEmail(email);
 }
 
 /**

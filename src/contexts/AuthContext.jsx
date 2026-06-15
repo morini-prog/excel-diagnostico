@@ -7,7 +7,7 @@ const AuthContext = createContext(null);
 
 /**
  * Proveedor global de autenticación.
- * Funciona con Firebase Auth (cuando está configurado) o con localAuth (modo demo).
+ * Funciona con Firebase Auth (autenticación anónima para estudiantes) o con localAuth (modo demo).
  * Expone el usuario actual y el estado de carga.
  */
 export function AuthProvider({ children }) {
@@ -20,7 +20,16 @@ export function AuthProvider({ children }) {
     if (hasFirebaseConfig && auth) {
       // Firebase Auth: escuchar cambios de estado
       unsubscribe = onAuthStateChanged(auth, (user) => {
-        setUsuario(user);
+        if (user) {
+          // Si el usuario está autenticado, construimos el perfil enriquecido
+          setUsuario({
+            uid: user.uid,
+            displayName: user.displayName || `${localStorage.getItem('excel_student_name') || ''} ${localStorage.getItem('excel_student_surname') || ''}`.trim(),
+            email: localStorage.getItem('excel_student_email') || user.email,
+          });
+        } else {
+          setUsuario(null);
+        }
         setCargando(false);
       });
     } else {

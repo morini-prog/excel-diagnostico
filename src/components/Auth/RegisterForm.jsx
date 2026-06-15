@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { registrarUsuario, iniciarSesion } from '../../firebase/auth';
+import { registrarUsuario } from '../../firebase/auth';
 
 /**
  * Formulario de registro de estudiante.
@@ -35,25 +35,17 @@ export default function RegisterForm() {
     }
 
     setCargando(true);
-    // Generar una contraseña consistente pero oculta basada en el correo
+    // Generar contraseña silenciosa (para compatibilidad con modo demo de localAuth)
     const passwordSilenciosa = `excelito_${emailClean.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
 
     try {
       await registrarUsuario(nombreClean, apellidoClean, emailClean, passwordSilenciosa);
     } catch (err) {
-      if (err.code === 'auth/email-already-in-use') {
-        // Intentar iniciar sesión automáticamente con la misma contraseña calculada
-        try {
-          await iniciarSesion(emailClean, passwordSilenciosa);
-        } catch (loginErr) {
-          setError('Este correo ya está registrado con otra sesión o configuración.');
-        }
-      } else {
-        const mensajes = {
-          'auth/invalid-email': 'El correo electrónico no tiene un formato válido.',
-        };
-        setError(mensajes[err.code] || 'Ocurrió un error. Intenta nuevamente.');
-      }
+      const mensajes = {
+        'auth/invalid-email': 'El correo electrónico no tiene un formato válido.',
+        'auth/email-already-in-use': 'Este correo electrónico ya está registrado.',
+      };
+      setError(mensajes[err.code] || 'Ocurrió un error. Intenta nuevamente.');
     } finally {
       setCargando(false);
     }
