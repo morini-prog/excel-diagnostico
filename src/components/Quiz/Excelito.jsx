@@ -39,84 +39,16 @@ export default function Excelito({ estado = 'esperando' }) {
     setFrase(listaFrases[randomIndex]);
   }, [estado]);
 
-  // SVG Pixel Art de Excelito (un disquete verde retro y tierno de 16x16)
-  // Usamos una cuadrícula de rectángulos para lograr el estilo retro pixelado
   return (
     <div className="flex items-center gap-6 bg-slate-900/40 border border-slate-800/80 rounded-3xl p-5 shadow-xl backdrop-blur-md transition-all duration-300">
-      {/* Sprite Pixel Art de Excelito */}
+      {/* Sprite Pixel Art de Excelito (Imagen generada) */}
       <div className="relative flex-shrink-0 w-24 h-24 flex items-center justify-center animate-bounce duration-1000">
-        <svg
-          viewBox="0 0 16 16"
-          className="w-20 h-20 filter drop-shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+        <img
+          src="/excelito.png"
+          alt="Excelito"
+          className="w-22 h-22 object-contain filter drop-shadow-[0_0_10px_rgba(16,185,129,0.35)]"
           style={{ imageRendering: 'pixelated' }}
-        >
-          {/* Cuerpo - Disquete Verde (Excel Green #10B981 / #059669) */}
-          {/* Fila 1 */}
-          <rect x="1" y="2" width="13" height="1" fill="#047857" />
-          <rect x="14" y="3" width="1" height="1" fill="#047857" />
-          {/* Fila 2 */}
-          <rect x="1" y="3" width="13" height="11" fill="#10B981" />
-          <rect x="14" y="4" width="1" height="10" fill="#059669" />
-          <rect x="1" y="14" width="14" height="1" fill="#047857" />
-          {/* Etiqueta blanca de disquete */}
-          <rect x="3" y="7" width="10" height="7" fill="#FFFFFF" />
-          {/* Líneas horizontales de la etiqueta */}
-          <rect x="4" y="9" width="8" height="1" fill="#3B82F6" />
-          <rect x="4" y="11" width="8" height="1" fill="#10B981" />
-          
-          {/* Parte superior metal deslizante */}
-          <rect x="4" y="3" width="7" height="3" fill="#D1D5DB" />
-          <rect x="5" y="3" width="2" height="2" fill="#9CA3AF" />
-          <rect x="8" y="4" width="2" height="1" fill="#4B5563" />
-
-          {/* Ojos tiernos (Estilo Kawaii Pixel) */}
-          {estado === 'incorrecto' ? (
-            <>
-              {/* Ojos en cruz X X */}
-              <rect x="4" y="5" width="1" height="1" fill="#111827" />
-              <rect x="5" y="6" width="1" height="1" fill="#111827" />
-              <rect x="4" y="7" width="1" height="1" fill="#111827" />
-              <rect x="10" y="5" width="1" height="1" fill="#111827" />
-              <rect x="11" y="6" width="1" height="1" fill="#111827" />
-              <rect x="10" y="7" width="1" height="1" fill="#111827" />
-            </>
-          ) : estado === 'correcto' ? (
-            <>
-              {/* Ojos alegres ^ ^ */}
-              <rect x="3" y="6" width="1" height="1" fill="#111827" />
-              <rect x="4" y="5" width="1" height="1" fill="#111827" />
-              <rect x="5" y="6" width="1" height="1" fill="#111827" />
-              <rect x="9" y="6" width="1" height="1" fill="#111827" />
-              <rect x="10" y="5" width="1" height="1" fill="#111827" />
-              <rect x="11" y="6" width="1" height="1" fill="#111827" />
-            </>
-          ) : (
-            <>
-              {/* Ojos redondos normales con brillo */}
-              <rect x="3" y="5" width="2" height="2" fill="#111827" />
-              <rect x="3" y="5" width="1" height="1" fill="#FFFFFF" />
-              <rect x="9" y="5" width="2" height="2" fill="#111827" />
-              <rect x="9" y="5" width="1" height="1" fill="#FFFFFF" />
-            </>
-          )}
-
-          {/* Mejillas rosadas */}
-          {estado === 'correcto' && (
-            <>
-              <rect x="2" y="7" width="1" height="1" fill="#F472B6" />
-              <rect x="11" y="7" width="1" height="1" fill="#F472B6" />
-            </>
-          )}
-
-          {/* Boca */}
-          {estado === 'correcto' ? (
-            <rect x="6" y="7" width="3" height="1" fill="#EF4444" /> // Sonrisa roja alegre
-          ) : estado === 'incorrecto' ? (
-            <rect x="6" y="6" width="3" height="1" fill="#111827" /> // Boca recta/triste
-          ) : (
-            <rect x="6" y="7" width="3" height="1" fill="#111827" /> // Pequeña boca feliz
-          )}
-        </svg>
+        />
       </div>
 
       {/* Globo de diálogo */}
