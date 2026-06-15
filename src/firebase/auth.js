@@ -8,31 +8,36 @@ import { localAuth } from './localAuth';
 
 /**
  * Registra un nuevo usuario con nombre, apellido y email.
- * Usa autenticación anónima si está configurado para evitar errores de contraseñas/duplicados en los estudiantes.
+ * Usa autenticación anónima si está configurado. Si falla, cae al modo localAuth sin bloquear al estudiante.
  */
 export async function registrarUsuario(nombre, apellido, email, password) {
-  if (hasFirebaseConfig && auth) {
-    // Cerrar sesión previa si existiera
-    try {
-      await signOut(auth);
-    } catch (e) {
-      // ignorar
-    }
-    
-    // Iniciar sesión anónimamente
-    const credencial = await signInAnonymously(auth);
-    
-    // Guardar nombre y apellido en el perfil de Firebase
-    await updateProfile(credencial.user, {
-      displayName: `${nombre} ${apellido}`,
-    });
+  // Guardar localmente los datos de identificación del estudiante en todos los casos
+  localStorage.setItem('excel_student_email', email.trim());
+  localStorage.setItem('excel_student_name', nombre.trim());
+  localStorage.setItem('excel_student_surname', apellido.trim());
 
-    // Persistir localmente los datos de identificación del estudiante
-    localStorage.setItem('excel_student_email', email.trim());
-    localStorage.setItem('excel_student_name', nombre.trim());
-    localStorage.setItem('excel_student_surname', apellido.trim());
-    
-    return credencial;
+  if (hasFirebaseConfig && auth) {
+    try {
+      // Cerrar sesión previa si existiera
+      try {
+        await signOut(auth);
+      } catch (e) {
+        // ignorar
+      }
+      
+      // Iniciar sesión anónimamente
+      const credencial = await signInAnonymously(auth);
+      
+      // Guardar nombre y apellido en el perfil de Firebase
+      await updateProfile(credencial.user, {
+        displayName: `${nombre} ${apellido}`,
+      });
+      
+      return credencial;
+    } catch (firebaseError) {
+      console.warn('[ExcelQuest] Error en Firebase Auth (ej: Autenticación Anónima desactivada). Usando fallback local.', firebaseError);
+      // Cae al flujo local de abajo
+    }
   }
   
   return localAuth.registrar(nombre, apellido, email, password);
@@ -43,7 +48,6 @@ export async function registrarUsuario(nombre, apellido, email, password) {
  */
 export async function iniciarSesion(email, password) {
   if (hasFirebaseConfig && auth) {
-    // No utilizado para estudiantes en modo Firebase, pero mantenemos compatibilidad por si acaso
     return null;
   }
   return localAuth.iniciarSesion(email, password);
@@ -58,7 +62,11 @@ export async function cerrarSesion() {
   localStorage.removeItem('excel_student_surname');
   
   if (hasFirebaseConfig && auth) {
-    return signOut(auth);
+    try {
+      return await signOut(auth);
+    } catch (e) {
+      // ignorar
+    }
   }
   return localAuth.cerrarSesion();
 }

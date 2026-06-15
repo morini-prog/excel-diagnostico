@@ -20,12 +20,21 @@ export function AuthProvider({ children }) {
     if (hasFirebaseConfig && auth) {
       // Firebase Auth: escuchar cambios de estado
       unsubscribe = onAuthStateChanged(auth, (user) => {
+        const localEmail = localStorage.getItem('excel_student_email');
         if (user) {
           // Si el usuario está autenticado, construimos el perfil enriquecido
           setUsuario({
             uid: user.uid,
             displayName: user.displayName || `${localStorage.getItem('excel_student_name') || ''} ${localStorage.getItem('excel_student_surname') || ''}`.trim(),
-            email: localStorage.getItem('excel_student_email') || user.email,
+            email: localEmail || user.email,
+          });
+        } else if (localEmail) {
+          // Fallback: No hay sesión en Firebase Auth, pero el estudiante tiene credenciales locales guardadas
+          setUsuario({
+            uid: `local-${localEmail.replace(/[^a-zA-Z0-9]/g, '')}`,
+            displayName: `${localStorage.getItem('excel_student_name') || ''} ${localStorage.getItem('excel_student_surname') || ''}`.trim(),
+            email: localEmail,
+            isFallback: true
           });
         } else {
           setUsuario(null);
