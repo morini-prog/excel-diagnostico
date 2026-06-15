@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { registrarUsuario } from '../../firebase/auth';
 
 /**
  * Formulario de registro de estudiante.
- * Recoge únicamente Nombre, Apellido y Correo electrónico.
+ * Recoge Nombre, Apellido y Correo electrónico.
+ * Protegido contra doble click simultáneo para evitar colisiones de registro.
  */
 export default function RegisterForm() {
   const [form, setForm] = useState({
@@ -13,6 +14,9 @@ export default function RegisterForm() {
   });
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
+  
+  // Guard de envío síncrono para evitar colisión por doble click
+  const enviandoRef = useRef(false);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -21,6 +25,10 @@ export default function RegisterForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Si ya hay un envío en curso, ignorar clicks subsecuentes
+    if (enviandoRef.current) return;
+
     const nombreClean = form.nombre.trim();
     const apellidoClean = form.apellido.trim();
     const emailClean = form.email.trim();
@@ -34,8 +42,11 @@ export default function RegisterForm() {
       return;
     }
 
+    // Activar guard e indicador de carga de inmediato
+    enviandoRef.current = true;
     setCargando(true);
-    // Generar contraseña silenciosa (para compatibilidad con modo demo de localAuth)
+    
+    // Generar contraseña silenciosa (para compatibilidad con modo local/demo)
     const passwordSilenciosa = `excelito_${emailClean.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
 
     try {
@@ -46,6 +57,8 @@ export default function RegisterForm() {
         'auth/email-already-in-use': 'Este correo electrónico ya está registrado.',
       };
       setError(mensajes[err.code] || 'Ocurrió un error. Intenta nuevamente.');
+      // Soltar guard solo si falló para permitir reintentos
+      enviandoRef.current = false;
     } finally {
       setCargando(false);
     }
