@@ -1,17 +1,15 @@
 import { useState } from 'react';
-import { registrarUsuario } from '../../firebase/auth';
+import { registrarUsuario, iniciarSesion } from '../../firebase/auth';
 
 /**
- * Formulario de registro de nuevo usuario.
- * Recoge nombre, apellido, email y contraseña.
+ * Formulario de registro de estudiante.
+ * Recoge únicamente Nombre, Apellido y Correo electrónico.
  */
-export default function RegisterForm({ onToggle }) {
+export default function RegisterForm() {
   const [form, setForm] = useState({
     nombre: '',
     apellido: '',
     email: '',
-    password: '',
-    confirmar: '',
   });
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
@@ -23,41 +21,54 @@ export default function RegisterForm({ onToggle }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.nombre.trim() || !form.apellido.trim()) {
-      setError('Por favor ingresá tu nombre y apellido.');
+    const nombreClean = form.nombre.trim();
+    const apellidoClean = form.apellido.trim();
+    const emailClean = form.email.trim();
+
+    if (!nombreClean || !apellidoClean) {
+      setError('Por favor, ingresa tu nombre y apellido.');
       return;
     }
-    if (form.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.');
+    if (!emailClean) {
+      setError('Por favor, ingresa tu correo electrónico.');
       return;
     }
-    if (form.password !== form.confirmar) {
-      setError('Las contraseñas no coinciden.');
-      return;
-    }
+
     setCargando(true);
+    // Generar una contraseña consistente pero oculta basada en el correo
+    const passwordSilenciosa = `excelito_${emailClean.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+
     try {
-      await Promise.resolve(registrarUsuario(form.nombre, form.apellido, form.email, form.password));
+      await registrarUsuario(nombreClean, apellidoClean, emailClean, passwordSilenciosa);
     } catch (err) {
-      const mensajes = {
-        'auth/email-already-in-use': 'Ese correo ya está registrado. Iniciá sesión.',
-        'auth/invalid-email': 'El correo electrónico no tiene un formato válido.',
-        'auth/weak-password': 'La contraseña es demasiado débil.',
-      };
-      setError(mensajes[err.code] || 'Ocurrió un error. Intentá nuevamente.');
+      if (err.code === 'auth/email-already-in-use') {
+        // Intentar iniciar sesión automáticamente con la misma contraseña calculada
+        try {
+          await iniciarSesion(emailClean, passwordSilenciosa);
+        } catch (loginErr) {
+          setError('Este correo ya está registrado con otra sesión o configuración.');
+        }
+      } else {
+        const mensajes = {
+          'auth/invalid-email': 'El correo electrónico no tiene un formato válido.',
+        };
+        setError(mensajes[err.code] || 'Ocurrió un error. Intenta nuevamente.');
+      }
     } finally {
       setCargando(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-      <h2 className="text-2xl font-bold text-white text-center mb-2">Crear cuenta</h2>
-      <p className="text-slate-400 text-center text-sm mb-4">
-        Registrate para guardar tus resultados
-      </p>
+    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      <div className="text-center mb-4">
+        <h2 className="text-2xl font-black text-white">Registro de Estudiante</h2>
+        <p className="text-slate-400 text-sm mt-1">
+          Ingresa tus datos antes de comenzar el diagnóstico
+        </p>
+      </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="nombre" className="block text-sm font-medium text-slate-300 mb-1">
             Nombre
@@ -70,8 +81,8 @@ export default function RegisterForm({ onToggle }) {
             autoComplete="given-name"
             value={form.nombre}
             onChange={handleChange}
-            placeholder="Juan"
-            className="input-field"
+            placeholder="Ej. Juan"
+            className="w-full bg-slate-900/60 border border-slate-700/80 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-sm"
           />
         </div>
         <div>
@@ -86,8 +97,8 @@ export default function RegisterForm({ onToggle }) {
             autoComplete="family-name"
             value={form.apellido}
             onChange={handleChange}
-            placeholder="García"
-            className="input-field"
+            placeholder="Ej. Pérez"
+            className="w-full bg-slate-900/60 border border-slate-700/80 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-sm"
           />
         </div>
       </div>
@@ -104,47 +115,13 @@ export default function RegisterForm({ onToggle }) {
           autoComplete="email"
           value={form.email}
           onChange={handleChange}
-          placeholder="juan@ejemplo.com"
-          className="input-field"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="password-register" className="block text-sm font-medium text-slate-300 mb-1">
-          Contraseña
-        </label>
-        <input
-          id="password-register"
-          name="password"
-          type="password"
-          required
-          autoComplete="new-password"
-          value={form.password}
-          onChange={handleChange}
-          placeholder="Mínimo 6 caracteres"
-          className="input-field"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="confirmar" className="block text-sm font-medium text-slate-300 mb-1">
-          Confirmar contraseña
-        </label>
-        <input
-          id="confirmar"
-          name="confirmar"
-          type="password"
-          required
-          autoComplete="new-password"
-          value={form.confirmar}
-          onChange={handleChange}
-          placeholder="Repetí tu contraseña"
-          className="input-field"
+          placeholder="Ej. juan.perez@colegio.com"
+          className="w-full bg-slate-900/60 border border-slate-700/80 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-sm"
         />
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2 text-red-400 text-sm">
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm">
           {error}
         </div>
       )}
@@ -153,31 +130,20 @@ export default function RegisterForm({ onToggle }) {
         type="submit"
         disabled={cargando}
         id="btn-registrar"
-        className="btn-primary w-full"
+        className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-base"
       >
         {cargando ? (
-          <span className="flex items-center justify-center gap-2">
-            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+          <>
+            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
             </svg>
             Registrando...
-          </span>
+          </>
         ) : (
-          'Crear cuenta'
+          'Comenzar Test 🎮'
         )}
       </button>
-
-      <p className="text-center text-slate-400 text-sm">
-        ¿Ya tenés cuenta?{' '}
-        <button
-          type="button"
-          onClick={onToggle}
-          className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
-        >
-          Iniciá sesión
-        </button>
-      </p>
     </form>
   );
 }

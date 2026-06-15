@@ -4,6 +4,7 @@ import Landing from './pages/Landing';
 import AuthPage from './pages/AuthPage';
 import QuizPage from './pages/QuizPage';
 import ResultsPage from './pages/ResultsPage';
+import TeacherDashboard from './pages/TeacherDashboard';
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/quiz" element={<QuizPage />} />
           <Route path="/resultados" element={<ResultsPage />} />
+          <Route path="/docente" element={<TeacherDashboard />} />
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -11,27 +11,27 @@ export default function ProgressBar({ actual, total, nivel }) {
     Inicial: 'from-sky-500 to-blue-600',
     Básico: 'from-emerald-500 to-teal-600',
     Intermedio: 'from-amber-500 to-orange-600',
-    Avanzado: 'from-violet-500 to-purple-600',
-    Experto: 'from-rose-500 to-pink-600',
   };
 
   const color = coloresNivel[nivel] || 'from-emerald-500 to-teal-600';
 
+  const nivelesActivos = ['Inicial', 'Básico', 'Intermedio'];
+
   return (
-    <div className="w-full space-y-2">
+    <div className="w-full space-y-3">
       <div className="flex items-center justify-between text-sm">
         <span className="text-slate-400 font-medium">
-          Pregunta <span className="text-white font-bold">{actual}</span> de{' '}
-          <span className="text-white font-bold">{total}</span>
+          Pregunta <span className="text-white font-black">{actual}</span> de{' '}
+          <span className="text-white font-black">{total}</span>
         </span>
         <span className="text-slate-400">
           Nivel:{' '}
-          <span className={`font-semibold bg-gradient-to-r ${color} bg-clip-text text-transparent`}>
+          <span className={`font-bold bg-gradient-to-r ${color} bg-clip-text text-transparent`}>
             {nivel}
           </span>
         </span>
       </div>
-      <div className="h-2 w-full bg-slate-700/50 rounded-full overflow-hidden">
+      <div className="h-2.5 w-full bg-slate-800 rounded-full overflow-hidden border border-slate-700/50">
         <div
           className={`h-full rounded-full bg-gradient-to-r ${color} transition-all duration-500 ease-out`}
           style={{ width: `${porcentaje}%` }}
@@ -41,15 +41,15 @@ export default function ProgressBar({ actual, total, nivel }) {
           aria-valuemax={100}
         />
       </div>
-      <div className="flex justify-between">
-        {['Inicial', 'Básico', 'Intermedio', 'Avanzado', 'Experto'].map((n, i) => {
-          const nivelActualIndex = ['Inicial', 'Básico', 'Intermedio', 'Avanzado', 'Experto'].indexOf(nivel);
+      <div className="flex justify-between px-1">
+        {nivelesActivos.map((n, i) => {
+          const nivelActualIndex = nivelesActivos.indexOf(nivel);
           const isDone = i < nivelActualIndex;
           const isCurrent = i === nivelActualIndex;
           return (
             <span
               key={n}
-              className={`text-[10px] font-medium transition-colors ${
+              className={`text-[10px] font-bold tracking-wider uppercase transition-colors duration-300 ${
                 isDone
                   ? 'text-emerald-400'
                   : isCurrent

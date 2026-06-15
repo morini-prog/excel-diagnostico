@@ -1,10 +1,20 @@
 /**
  * Banco de preguntas para el diagnóstico de habilidades en Excel.
- * 5 niveles × 5 preguntas = 25 preguntas en total.
+ * 3 niveles × 5 preguntas = 15 preguntas en total.
  * Cada pregunta tiene: id, nivel, categoría, texto, opciones (a/b/c/d) y respuesta correcta.
  */
 
-export const NIVELES = ['Inicial', 'Básico', 'Intermedio', 'Avanzado', 'Experto'];
+export const NIVELES = ['Inicial', 'Básico', 'Intermedio'];
+
+export const RANGOS = [
+  { min: 0, max: 9, rango: 'Desconocedor', rangoLabel: 'Desconocedor (Rango 1)' },
+  { min: 10, max: 19, rango: 'Novato', rangoLabel: 'Novato (Rango 2)' },
+  { min: 20, max: 34, rango: 'Aprendiz', rangoLabel: 'Aprendiz (Rango 3)' },
+  { min: 35, max: 59, rango: 'Practicante', rangoLabel: 'Practicante (Rango 4)' },
+  { min: 60, max: 74, rango: 'Avanzado', rangoLabel: 'Avanzado (Rango 5)' },
+  { min: 75, max: 89, rango: 'Maestro de Fórmulas', rangoLabel: 'Maestro de Fórmulas (Rango 6)' },
+  { min: 90, max: 100, rango: 'Experto', rangoLabel: 'Experto (Rango 7)' }
+];
 
 export const preguntas = [
   // ─────────────────────────────────────────────────────
@@ -107,8 +117,7 @@ export const preguntas = [
     id: 11,
     nivel: 'Intermedio',
     categoria: 'Funciones lógicas',
-    pregunta:
-      '¿Cuál es el resultado de =SI(5>3, "Mayor", "Menor")?',
+    pregunta: '¿Cuál es el resultado de =SI(5>3, "Mayor", "Menor")?',
     opciones: ['Menor', 'Mayor', 'Error', 'VERDADERO'],
     correcta: 1,
   },
@@ -116,8 +125,7 @@ export const preguntas = [
     id: 12,
     nivel: 'Intermedio',
     categoria: 'Búsqueda',
-    pregunta:
-      'En =BUSCARV(valor, tabla, col_índice, FALSO), ¿qué indica el argumento FALSO?',
+    pregunta: 'En =BUSCARV(valor, tabla, col_índice, FALSO), ¿qué indica el argumento FALSO?',
     opciones: [
       'Que la tabla está ordenada de forma descendente',
       'Que se busca una coincidencia aproximada',
@@ -160,140 +168,6 @@ export const preguntas = [
     opciones: ['=DERECHA()', '=EXTRAE()', '=IZQUIERDA()', '=LARGO()'],
     correcta: 2,
   },
-
-  // ─────────────────────────────────────────────────────
-  //  NIVEL 4 — AVANZADO
-  // ─────────────────────────────────────────────────────
-  {
-    id: 16,
-    nivel: 'Avanzado',
-    categoria: 'Fórmulas matriciales',
-    pregunta:
-      '¿Cuál es la diferencia entre una fórmula normal y una fórmula matricial (array formula)?',
-    opciones: [
-      'Las fórmulas matriciales solo funcionan en Excel 365',
-      'Las fórmulas matriciales pueden realizar cálculos sobre múltiples valores y devolver uno o varios resultados',
-      'Las fórmulas matriciales no pueden usar funciones como SUMA o PROMEDIO',
-      'Las fórmulas matriciales son exclusivamente para fines estadísticos',
-    ],
-    correcta: 1,
-  },
-  {
-    id: 17,
-    nivel: 'Avanzado',
-    categoria: 'Automatización',
-    pregunta: '¿Qué es una macro en Excel y para qué se utiliza?',
-    opciones: [
-      'Es un tipo especial de gráfico interactivo',
-      'Es una función que solo está disponible en la versión de pago',
-      'Es una secuencia de instrucciones VBA que automatiza tareas repetitivas',
-      'Es una plantilla con formato predefinido',
-    ],
-    correcta: 2,
-  },
-  {
-    id: 18,
-    nivel: 'Avanzado',
-    categoria: 'Funciones avanzadas',
-    pregunta:
-      '¿Qué devuelve la función =INDICE(A1:C5, 3, 2)?',
-    opciones: [
-      'El valor de la celda A3',
-      'El valor de la celda en la fila 3 y columna 2 del rango A1:C5',
-      'El número de filas del rango A1:C5',
-      'Un error, porque ÍNDICE requiere COINCIDIR',
-    ],
-    correcta: 1,
-  },
-  {
-    id: 19,
-    nivel: 'Avanzado',
-    categoria: 'Análisis de datos',
-    pregunta: '¿Cuál de las siguientes herramientas de Excel permite resolver problemas de optimización cambiando variables de decisión?',
-    opciones: ['Buscar objetivo', 'Solver', 'Power Query', 'Análisis de hipótesis'],
-    correcta: 1,
-  },
-  {
-    id: 20,
-    nivel: 'Avanzado',
-    categoria: 'Power Query',
-    pregunta: '¿Cuál es la función principal de Power Query en Excel?',
-    opciones: [
-      'Crear gráficos dinámicos avanzados',
-      'Importar, transformar y limpiar datos de múltiples fuentes antes de cargarlos en Excel',
-      'Ejecutar macros programadas en horarios específicos',
-      'Conectar Excel con bases de datos solo de Microsoft',
-    ],
-    correcta: 1,
-  },
-
-  // ─────────────────────────────────────────────────────
-  //  NIVEL 5 — EXPERTO
-  // ─────────────────────────────────────────────────────
-  {
-    id: 21,
-    nivel: 'Experto',
-    categoria: 'VBA',
-    pregunta:
-      '¿Cuál de los siguientes fragmentos de VBA recorre todas las celdas de un rango y colorea en rojo las que contienen un valor mayor a 100?',
-    opciones: [
-      'For Each c In Range("A1:A10") : If c > 100 Then c.Font.Color = RGB(255,0,0) : Next c',
-      'For Each c In Range("A1:A10") : If c > 100 Then c.Interior.Color = RGB(255,0,0) : Next c',
-      'Do While c < 100 : c.Interior.Color = RGB(255,0,0) : Loop',
-      'Range("A1:A10").ColorIndex = 3 If Value > 100',
-    ],
-    correcta: 1,
-  },
-  {
-    id: 22,
-    nivel: 'Experto',
-    categoria: 'Funciones dinámicas',
-    pregunta:
-      '¿Qué función de Excel 365 devuelve un rango de valores únicos eliminando duplicados automáticamente?',
-    opciones: ['=UNICOS()', '=SIN.DUPLICADOS()', '=DISTINTOS()', '=FILTRAR.UNICOS()'],
-    correcta: 0,
-  },
-  {
-    id: 23,
-    nivel: 'Experto',
-    categoria: 'Power Pivot',
-    pregunta: '¿Qué es DAX en el contexto de Power Pivot de Excel?',
-    opciones: [
-      'Un formato de archivo para exportar datos de Excel',
-      'Un lenguaje de fórmulas para crear métricas y columnas calculadas en modelos de datos',
-      'Un protocolo de conexión a bases de datos externas',
-      'Una extensión de VBA para macros avanzadas',
-    ],
-    correcta: 1,
-  },
-  {
-    id: 24,
-    nivel: 'Experto',
-    categoria: 'Automatización avanzada',
-    pregunta:
-      '¿Cuál es la diferencia entre un procedimiento Sub y una Function en VBA?',
-    opciones: [
-      'Sub solo puede ejecutarse desde un botón; Function solo desde el Editor',
-      'Sub realiza acciones sin devolver un valor; Function devuelve un valor que puede usarse en fórmulas',
-      'Sub es más rápido que Function en todos los casos',
-      'No hay diferencia funcional, solo de nomenclatura',
-    ],
-    correcta: 1,
-  },
-  {
-    id: 25,
-    nivel: 'Experto',
-    categoria: 'Fórmulas anidadas',
-    pregunta:
-      '¿Cuál de las siguientes fórmulas calcula el promedio de las ventas (columna B) solo cuando el producto (columna A) es "Laptop" y la región (columna C) es "Sur"?',
-    opciones: [
-      '=PROMEDIO.SI(A:A,"Laptop",B:B)',
-      '=PROMEDIO.SI.CONJUNTO(B:B, A:A,"Laptop", C:C,"Sur")',
-      '=SUMAR.SI(B:B, A:A,"Laptop", C:C,"Sur")/CONTAR.SI(A:A,"Laptop")',
-      '=SI(Y(A:A="Laptop",C:C="Sur"),PROMEDIO(B:B),0)',
-    ],
-    correcta: 1,
-  },
 ];
 
 /**
@@ -302,51 +176,39 @@ export const preguntas = [
  */
 export const recomendaciones = {
   Inicial: [
-    'Familiarízate con la interfaz de Excel: cinta de opciones, barra de fórmulas y tipos de celdas.',
-    'Practica las fórmulas básicas: SUMA, PROMEDIO, MIN y MAX.',
-    'Aprende los atajos de teclado más usados: Ctrl+C, Ctrl+V, Ctrl+Z, Ctrl+Inicio.',
-    'Completa el curso gratuito "Excel para principiantes" de Microsoft Learn.',
+    'Familiarízate con la interfaz de Excel: la cinta de opciones, la barra de fórmulas y los tipos de datos en celdas.',
+    'Practica las fórmulas aritméticas básicas y funciones elementales: SUMA, PROMEDIO, MIN y MAX.',
+    'Aprende los atajos de teclado esenciales de navegación y formato en celdas.',
   ],
   Básico: [
-    'Profundiza en referencias absolutas ($A$1) y mixtas ($A1 o A$1).',
-    'Practica las funciones CONTAR, CONTARA y CONTAR.SI para análisis de datos.',
-    'Aprende a inmovilizar paneles y trabajar con múltiples hojas.',
-    'Usa la función de Autocompletar y Relleno rápido para ser más eficiente.',
+    'Domina el uso de referencias absolutas ($A$1) para fijar celdas al copiar fórmulas.',
+    'Practica las funciones de conteo CONTAR, CONTARA y CONTAR.SI para filtrar datos iniciales.',
+    'Utiliza la inmovilización de paneles para mantener visibles tus encabezados de filas y columnas.',
   ],
   Intermedio: [
-    'Domina BUSCARV y su alternativa moderna BUSCARX para cruzar datos.',
-    'Crea tablas dinámicas para resumir grandes conjuntos de datos fácilmente.',
-    'Aplica formato condicional para visualizar tendencias de forma automática.',
-    'Practica las funciones de texto: IZQUIERDA, DERECHA, EXTRAE, CONCATENAR.',
-  ],
-  Avanzado: [
-    'Aprende la combinación ÍNDICE + COINCIDIR como alternativa flexible a BUSCARV.',
-    'Explora Power Query para automatizar la importación y limpieza de datos.',
-    'Utiliza Solver para resolver problemas de optimización y toma de decisiones.',
-    'Introduce las fórmulas matriciales (CSE) para cálculos multidimensionales.',
-  ],
-  Experto: [
-    'Perfecciona tus macros VBA añadiendo manejo de errores y módulos reutilizables.',
-    'Explora DAX en Power Pivot para construir modelos de datos complejos y KPIs.',
-    'Usa las funciones dinámicas de Excel 365: UNICOS, FILTRAR, ORDENAR, SECUENCIA.',
-    'Comparte tu conocimiento: crea plantillas, documenta procesos y entrena a otros.',
+    'Domina la función de búsqueda BUSCARV (y BUSCARX) con coincidencia exacta (argumento FALSO).',
+    'Crea tablas dinámicas básicas para resumir y analizar bases de datos extensas.',
+    'Aplica formato condicional basado en reglas de celda para resaltar tendencias visualmente.',
+    'Practica funciones lógicas como =SI() anidadas y funciones de texto avanzadas.',
   ],
 };
 
 /**
  * Determina el nivel alcanzado basándose en el porcentaje de aciertos.
- * @param {number} correctas - Número de respuestas correctas (0–25)
+ * @param {number} correctas - Número de respuestas correctas (0–15)
  * @returns {{ nivel: string, porcentaje: number }}
  */
 export function calcularNivel(correctas) {
-  const total = preguntas.length; // 25
+  const total = preguntas.length; // 15
   const porcentaje = Math.round((correctas / total) * 100);
 
   let nivel;
-  if (porcentaje < 20) nivel = 'Inicial';
-  else if (porcentaje < 40) nivel = 'Básico';
-  else if (porcentaje < 60) nivel = 'Intermedio';
-  else if (porcentaje < 80) nivel = 'Avanzado';
+  if (porcentaje < 10) nivel = 'Desconocedor';
+  else if (porcentaje < 20) nivel = 'Novato';
+  else if (porcentaje < 35) nivel = 'Aprendiz';
+  else if (porcentaje < 60) nivel = 'Practicante';
+  else if (porcentaje < 75) nivel = 'Avanzado';
+  else if (porcentaje < 90) nivel = 'Maestro de Fórmulas';
   else nivel = 'Experto';
 
   return { nivel, porcentaje };

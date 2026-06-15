@@ -1,16 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { preguntas } from '../data/questions';
 import QuizQuestion from '../components/Quiz/QuizQuestion';
 import ProgressBar from '../components/Quiz/ProgressBar';
+import Excelito from '../components/Quiz/Excelito';
 import { calcularPuntaje } from '../utils/scoring';
 import { guardarResultado } from '../firebase/firestore';
 
 /**
  * Página principal del quiz.
- * Muestra una pregunta a la vez con barra de progreso.
- * Al terminar, calcula el resultado y lo guarda en Firestore.
+ * Muestra una pregunta a la vez con barra de progreso y el compañero Excelito.
+ * Al terminar, calcula el resultado y lo guarda en la base de datos.
  */
 export default function QuizPage() {
   const { usuario, cargando } = useAuth();
@@ -18,6 +19,15 @@ export default function QuizPage() {
   const [preguntaActual, setPreguntaActual] = useState(0);
   const [respuestas, setRespuestas] = useState([]);
   const [guardando, setGuardando] = useState(false);
+  const [estadoExcelito, setEstadoExcelito] = useState('inicio');
+
+  useEffect(() => {
+    // Al cargar el test, Excelito se presenta
+    const timer = setTimeout(() => {
+      setEstadoExcelito('esperando');
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (cargando) {
     return (
@@ -32,9 +42,14 @@ export default function QuizPage() {
   const pregunta = preguntas[preguntaActual];
   const totalPreguntas = preguntas.length;
 
+  const handleRespuestaClick = (esCorrecta) => {
+    setEstadoExcelito(esCorrecta ? 'correcto' : 'incorrecto');
+  };
+
   const handleResponder = async (opcionIndex) => {
     const nuevasRespuestas = [...respuestas, opcionIndex];
     setRespuestas(nuevasRespuestas);
+    setEstadoExcelito('esperando'); // Resetear para la siguiente pregunta
 
     if (preguntaActual < totalPreguntas - 1) {
       setPreguntaActual((prev) => prev + 1);
@@ -43,7 +58,7 @@ export default function QuizPage() {
       setGuardando(true);
       const resultado = calcularPuntaje(nuevasRespuestas);
 
-      // Extraer nombre y apellido del displayName de Firebase
+      // Extraer nombre y apellido del displayName del usuario
       const displayName = usuario.displayName || '';
       const partes = displayName.split(' ');
       const nombre = partes[0] || '';
@@ -80,7 +95,7 @@ export default function QuizPage() {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4">
         <div className="animate-spin h-12 w-12 border-4 border-emerald-500 border-t-transparent rounded-full" />
-        <p className="text-slate-300 text-lg">Calculando tu resultado...</p>
+        <p className="text-slate-300 text-lg">Calculando y guardando tu récord...</p>
       </div>
     );
   }
@@ -88,39 +103,41 @@ export default function QuizPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between px-4 sm:px-8 py-4 border-b border-slate-800/60">
+      <header className="flex items-center justify-between px-4 sm:px-8 py-4 border-b border-slate-800/60 bg-slate-950/60 backdrop-blur-md sticky top-0 z-50">
         <span className="text-xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-          ExcelDiagnóstico
+          ExcelQuest
         </span>
         <span className="text-slate-400 text-sm">
-          Hola, <span className="text-white font-medium">{(usuario.displayName || usuario.email).split(' ')[0]}</span>
+          Jugador: <span className="text-white font-bold">{usuario.displayName || usuario.email}</span>
         </span>
       </header>
 
-      {/* Contenido */}
-      <main className="flex-1 flex items-start justify-center px-4 py-10">
-        <div className="w-full max-w-2xl">
-          {/* Progreso */}
-          <div className="mb-8">
-            <ProgressBar
-              actual={preguntaActual + 1}
-              total={totalPreguntas}
-              nivel={pregunta.nivel}
-            />
-          </div>
+      {/* Contenido principal */}
+      <main className="flex-1 flex items-start justify-center px-4 py-8">
+        <div className="w-full max-w-2xl space-y-6">
+          {/* Acompañante Excelito */}
+          <Excelito estado={estadoExcelito} />
 
-          {/* Card de pregunta */}
-          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-3xl p-6 sm:p-8 shadow-2xl">
+          {/* Barra de Progreso */}
+          <ProgressBar
+            actual={preguntaActual + 1}
+            total={totalPreguntas}
+            nivel={pregunta.nivel}
+          />
+
+          {/* Tarjeta de Pregunta */}
+          <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-800/80 rounded-3xl p-6 sm:p-8 shadow-2xl">
             <QuizQuestion
               key={preguntaActual}
               pregunta={pregunta}
               onResponder={handleResponder}
+              onRespuestaClick={handleRespuestaClick}
               index={preguntaActual}
             />
           </div>
 
-          {/* Indicador de preguntas restantes */}
-          <p className="text-center text-slate-600 text-xs mt-4">
+          {/* Estado de Preguntas */}
+          <p className="text-center text-slate-600 text-xs uppercase tracking-wider">
             {totalPreguntas - preguntaActual - 1} preguntas restantes
           </p>
         </div>
