@@ -15,24 +15,31 @@ const COLECCION = 'resultados';
 
 /**
  * Guarda el resultado del diagnóstico.
- * Usa Firestore si está configurado, de lo contrario usa localStore.
+ * Implementa una estrategia "local-first" escribiendo inmediatamente en localStore
+ * y sincronizando en segundo plano con Firestore de forma no bloqueante.
  */
 export async function guardarResultado(datos) {
-  if (hasFirebaseConfig && db) {
-    try {
-      const docRef = await addDoc(collection(db, COLECCION), {
-        ...datos,
-        fecha: serverTimestamp(),
-      });
-      return docRef.id;
-    } catch (err) {
-      console.warn('[ExcelQuest] Error al guardar en Firestore, usando localStore fallback:', err);
-    }
-  }
-  const id = localStore.guardar(datos);
-  // Disparar evento para actualizar panel docente local en tiempo real si está abierto
+  // 1. Guardar localmente de inmediato (cero demoras para el estudiante)
+  const localId = localStore.guardar(datos);
   window.dispatchEvent(new Event('localstore-update'));
-  return id;
+
+  // 2. Intentar guardar en Firestore en segundo plano (asíncrono y sin await)
+  if (hasFirebaseConfig && db) {
+    addDoc(collection(db, COLECCION), {
+      ...datos,
+      localId,
+      fecha: serverTimestamp(),
+    })
+      .then((docRef) => {
+        console.log('[ExcelQuest] Sincronizado exitosamente en la nube. ID:', docRef.id);
+      })
+      .catch((err) => {
+        console.warn('[ExcelQuest] Falló la sincronización en Firestore (el registro permanece local):', err);
+      });
+  }
+
+  // Devolvemos el ID local para que la UI pueda avanzar sin esperar al servidor
+  return localId;
 }
 
 /**
@@ -49,7 +56,10 @@ export async function obtenerResultadosPorUsuario(email) {
         orderBy('fecha', 'desc')
       );
       const snapshot = await getDocs(q);
-      return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      
+      // Si tenemos datos de la nube, los combinamos con los locales
+      const cloudData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      if (cloudData.length > 0) return cloudData;
     } catch (err) {
       console.warn('[ExcelQuest] Error al leer historial de Firestore, usando localStore fallback:', err);
     }
