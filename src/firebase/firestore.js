@@ -46,24 +46,33 @@ export async function guardarResultado(datos) {
 
 /**
  * Recupera todos los resultados de un usuario específico mediante su email.
+ * Ordena en memoria para evitar requerir un índice compuesto en la consola de Firebase.
  */
 export async function obtenerResultadosPorUsuario(email) {
   if (!email) return [];
   
   if (hasFirebaseConfig && db) {
     try {
+      // Filtramos por email únicamente (no usamos orderBy para no exigir índices compuestos en Firebase)
       const q = query(
         collection(db, COLECCION),
-        where('email', '==', email.toLowerCase().trim()),
-        orderBy('fecha', 'desc')
+        where('email', '==', email.toLowerCase().trim())
       );
       const snapshot = await getDocs(q);
       
-      // Si tenemos datos de la nube, los combinamos con los locales
       const cloudData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      if (cloudData.length > 0) return cloudData;
+      
+      // Ordenamos en memoria cronológicamente de forma descendente (más reciente primero)
+      cloudData.sort((a, b) => {
+        const dateA = a.fecha?.toDate ? a.fecha.toDate() : new Date(a.fecha || 0);
+        const dateB = b.fecha?.toDate ? b.fecha.toDate() : new Date(b.fecha || 0);
+        return dateB - dateA;
+      });
+
+      return cloudData;
     } catch (err) {
       console.warn('[ExcelQuest] Error al leer historial de Firestore, usando localStore fallback:', err);
+      return localStore.obtenerPorEmail(email);
     }
   }
   return localStore.obtenerPorEmail(email);
@@ -80,6 +89,7 @@ export async function obtenerTodosLosResultados() {
       return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     } catch (err) {
       console.warn('[ExcelQuest] Error al leer todos los resultados de Firestore, usando localStore fallback:', err);
+      return localStore.obtenerTodos();
     }
   }
   return localStore.obtenerTodos();
@@ -127,7 +137,8 @@ export function suscribirResultados(callback) {
         }));
         callback(resultados);
       }, (error) => {
-        console.error('Error en suscripción Firestore:', error);
+        console.error('Error en suscripción Firestore, usando fallback:', error);
+        callback(localStore.obtenerTodos());
       });
     } catch (err) {
       console.warn('[ExcelQuest] Error al configurar suscripción Firestore. Usando fallback de localStorage.', err);
