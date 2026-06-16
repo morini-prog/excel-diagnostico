@@ -9,12 +9,14 @@ vi.mock('../firebase/firestore', () => ({
   guardarResultado: vi.fn(),
   obtenerResultadosPorUsuario: vi.fn(),
   obtenerTodosLosResultados: vi.fn(),
+  sincronizarResultadosPendientes: vi.fn(),
 }));
 
 import {
   guardarResultado,
   obtenerResultadosPorUsuario,
   obtenerTodosLosResultados,
+  sincronizarResultadosPendientes,
 } from '../firebase/firestore';
 
 const resultadoMock = {
@@ -91,5 +93,15 @@ describe('obtenerTodosLosResultados', () => {
     obtenerTodosLosResultados.mockResolvedValueOnce([resultadoMock]);
     const resultado = await obtenerTodosLosResultados();
     expect(resultado).toHaveLength(1);
+  });
+});
+
+describe('sincronizarResultadosPendientes', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('se ejecuta correctamente', async () => {
+    sincronizarResultadosPendientes.mockResolvedValueOnce(undefined);
+    await sincronizarResultadosPendientes();
+    expect(sincronizarResultadosPendientes).toHaveBeenCalledTimes(1);
   });
 });

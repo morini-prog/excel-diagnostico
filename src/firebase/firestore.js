@@ -10,7 +10,8 @@ import {
   writeBatch,
   doc
 } from 'firebase/firestore';
-import { db, hasFirebaseConfig } from './config';
+import { signInAnonymously } from 'firebase/auth';
+import { auth, db, hasFirebaseConfig } from './config';
 import { localStore } from './localStore';
 
 const COLECCION = 'resultados';
@@ -34,6 +35,7 @@ export async function guardarResultado(datos) {
     })
       .then((docRef) => {
         console.log('[ExcelQuest] Sincronizado exitosamente en la nube. ID:', docRef.id);
+        localStore.marcarComoSincronizado(localId);
       })
       .catch((err) => {
         console.warn('[ExcelQuest] Falló la sincronización en Firestore (el registro permanece local):', err);
@@ -171,4 +173,46 @@ export function suscribirResultados(callback) {
     window.removeEventListener('storage', handleUpdate);
     clearInterval(intervalId);
   };
+}
+
+/**
+ * Busca resultados locales no sincronizados y los sube a Firestore.
+ */
+export async function sincronizarResultadosPendientes() {
+  if (!hasFirebaseConfig || !db) return;
+
+  const todos = localStore.obtenerTodos();
+  const pendientes = todos.filter(item => !item.sincronizado);
+
+  if (pendientes.length === 0) return;
+
+  console.log(`[ExcelQuest] Detectados ${pendientes.length} resultados pendientes de sincronizar.`);
+
+  for (const item of pendientes) {
+    try {
+      // Nos aseguramos de estar autenticados. Si no hay currentUser, iniciamos de forma anónima
+      if (auth && !auth.currentUser) {
+        await signInAnonymously(auth);
+      }
+
+      // Remover campos auxiliares del almacenamiento local antes de subir
+      const { id, sincronizado, ...datosParaSubir } = item;
+      const fechaObj = item.fecha ? new Date(item.fecha) : new Date();
+
+      await addDoc(collection(db, COLECCION), {
+        ...datosParaSubir,
+        localId: id,
+        fecha: fechaObj,
+      });
+
+      localStore.marcarComoSincronizado(id);
+      console.log(`[ExcelQuest] Registro local ${id} sincronizado con la nube exitosamente.`);
+    } catch (err) {
+      console.warn(`[ExcelQuest] No se pudo sincronizar el registro ${item.id}:`, err.message);
+      break; // Detener en el primer fallo para no acumular errores de red/permisos
+    }
+  }
+
+  // Notificar actualización local
+  window.dispatchEvent(new Event('localstore-update'));
 }

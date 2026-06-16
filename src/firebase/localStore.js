@@ -44,6 +44,15 @@ export const localStore = {
     return getAll();
   },
 
+  marcarComoSincronizado(id) {
+    const items = getAll();
+    const index = items.findIndex(item => item.id === id);
+    if (index !== -1) {
+      items[index].sincronizado = true;
+      saveAll(items);
+    }
+  },
+
   borrarTodos() {
     saveAll([]);
   }

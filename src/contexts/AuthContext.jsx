@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, hasFirebaseConfig } from '../firebase/config';
 import { localAuth } from '../firebase/localAuth';
+import { sincronizarResultadosPendientes } from '../firebase/firestore';
 
 const AuthContext = createContext(null);
 
@@ -15,6 +16,9 @@ export function AuthProvider({ children }) {
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
+    // Intentar sincronizar resultados pendientes al cargar la app
+    sincronizarResultadosPendientes();
+
     let unsubscribe;
 
     if (hasFirebaseConfig && auth) {
