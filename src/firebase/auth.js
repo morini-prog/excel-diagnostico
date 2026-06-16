@@ -54,6 +54,24 @@ export async function iniciarSesion(email, password) {
 }
 
 /**
+ * Inicia sesión de forma anónima para el docente si Firebase está configurado.
+ */
+export async function iniciarSesionDocente() {
+  if (hasFirebaseConfig && auth) {
+    try {
+      if (!auth.currentUser) {
+        await signInAnonymously(auth);
+      }
+      return auth.currentUser;
+    } catch (firebaseError) {
+      console.warn('[ExcelQuest] Error al iniciar sesión anónima de docente:', firebaseError);
+      throw firebaseError;
+    }
+  }
+  return null;
+}
+
+/**
  * Cierra la sesión del usuario actual.
  */
 export async function cerrarSesion() {

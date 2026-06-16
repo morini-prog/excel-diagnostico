@@ -24,7 +24,7 @@ export const localStore = {
     const nuevo = {
       id,
       ...datos,
-      fecha: { toDate: () => new Date() }, // Simula Firestore Timestamp
+      fecha: new Date().toISOString(), // Serializar a string ISO válido para persistencia JSON
     };
     items.unshift(nuevo); // más reciente primero
     saveAll(items);

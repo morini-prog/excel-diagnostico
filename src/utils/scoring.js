@@ -50,13 +50,46 @@ export function calcularPuntaje(respuestasUsuario) {
 }
 
 /**
+ * Parsea una fecha de forma segura soportando Timestamps de Firestore,
+ * Timestamps serializados en JSON, objetos Date, strings ISO y fallbacks.
+ * @param {any} fecha
+ * @returns {Date}
+ */
+export function parsearFechaSafe(fecha) {
+  if (!fecha) return new Date();
+
+  // 1. Objeto Timestamp real de Firestore
+  if (typeof fecha.toDate === 'function') {
+    return fecha.toDate();
+  }
+
+  // 2. Objeto Timestamp serializado en JSON: { seconds: ..., nanoseconds: ... }
+  if (fecha.seconds !== undefined) {
+    return new Date(fecha.seconds * 1000);
+  }
+
+  // 3. Objeto Date nativo
+  if (fecha instanceof Date) {
+    return fecha;
+  }
+
+  // 4. String ISO o número de milisegundos
+  const d = new Date(fecha);
+  if (!isNaN(d.getTime())) {
+    return d;
+  }
+
+  // Fallback seguro (evita invalid dates)
+  return new Date();
+}
+
+/**
  * Formatea una fecha de Firestore (Timestamp o Date) para mostrar al usuario.
- * @param {object|Date} fecha
+ * @param {object|Date|string} fecha
  * @returns {string}
  */
 export function formatearFecha(fecha) {
-  if (!fecha) return '—';
-  const d = fecha.toDate ? fecha.toDate() : new Date(fecha);
+  const d = parsearFechaSafe(fecha);
   return d.toLocaleDateString('es-AR', {
     day: '2-digit',
     month: '2-digit',

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { suscribirResultados, borrarTodosLosResultados } from '../firebase/firestore';
-import { formatearFecha } from '../utils/scoring';
+import { formatearFecha, parsearFechaSafe } from '../utils/scoring';
+import { iniciarSesionDocente, cerrarSesion } from '../firebase/auth';
 
 /**
  * Panel Docente en Tiempo Real.
@@ -23,26 +24,47 @@ export default function TeacherDashboard() {
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState('');
 
-  // Verificar autenticación docente
+  const [authListo, setAuthListo] = useState(false);
+
+  // Verificar autenticación docente e iniciar sesión en Firebase
   useEffect(() => {
     const isAuth = sessionStorage.getItem('docente_auth') === 'true';
     if (!isAuth) {
       navigate('/', { replace: true });
+      return;
     }
+
+    const autenticarDocente = async () => {
+      try {
+        await iniciarSesionDocente();
+      } catch (err) {
+        console.error('Error al autenticar docente en Firebase:', err);
+      } finally {
+        setAuthListo(true);
+      }
+    };
+    autenticarDocente();
   }, [navigate]);
 
-  // Suscribirse a los datos
+  // Suscribirse a los datos una vez autenticado
   useEffect(() => {
+    if (!authListo) return;
+
     setCargando(true);
     const desuscribir = suscribirResultados((datos) => {
       setResultados(datos);
       setCargando(false);
     });
     return () => desuscribir();
-  }, []);
+  }, [authListo]);
 
-  const handleCerrarSesionDocente = () => {
+  const handleCerrarSesionDocente = async () => {
     sessionStorage.removeItem('docente_auth');
+    try {
+      await cerrarSesion();
+    } catch (err) {
+      console.error('Error al cerrar sesión de Firebase:', err);
+    }
     navigate('/');
   };
 
@@ -122,8 +144,7 @@ export default function TeacherDashboard() {
 
   // 2. Agrupamiento por fechas
   const getShortDate = (fechaObj) => {
-    if (!fechaObj) return 'Sin fecha';
-    const d = fechaObj.toDate ? fechaObj.toDate() : new Date(fechaObj);
+    const d = parsearFechaSafe(fechaObj);
     return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 

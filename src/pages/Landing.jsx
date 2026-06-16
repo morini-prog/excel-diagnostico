@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { iniciarSesionDocente } from '../firebase/auth';
 
 /**
  * Página de aterrizaje con la sección de inicio y el botón de Ingreso Docente.
@@ -33,9 +34,14 @@ export default function Landing() {
     setErrorPassword('');
   };
 
-  const handleModalSubmit = (e) => {
+  const handleModalSubmit = async (e) => {
     e.preventDefault();
     if (password === '2228') {
+      try {
+        await iniciarSesionDocente();
+      } catch (err) {
+        console.warn('Error al iniciar sesión docente en Landing:', err);
+      }
       sessionStorage.setItem('docente_auth', 'true');
       setMostrarModal(false);
       navigate('/docente');
